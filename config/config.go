@@ -35,20 +35,36 @@ func SetConfigType(newConfigType string) {
 
 // General R/W functions
 
+// Simple wrapper to get a specific value given a key
 func Value(key string) interface{} {
+	return Config()[key]
+}
+
+// Returns the config object depending on configType
+func Config() interface{} {
+	// We handle the different config types
 	switch configType {
 	case "json":
-		return readValueJson(key)
+		readConfigJson()
 
 	default:
-		panic("Unhandled config type")
+		panic("Unhandled config type.")
 	}
 }
 
+// Simple wrapper to assign a specific value to a key
 func SetValue(key string, value interface{}) {
+	config := Config()
+	config[key] = value
+	SetConfig(config)
+}
+
+// Sets the config object depending on configType
+func SetConfig(config interface{}) {
+	// We handle the different config types
 	switch configType {
 	case "json":
-		writeValueJson(key, value)
+		writeConfigJson(config)
 
 	default:
 		panic("Unhandled config type.")
@@ -57,39 +73,27 @@ func SetValue(key string, value interface{}) {
 
 // JSON R/W functions
 
-func readValueJson(key string) interface{} {
+func readConfigJson() interface{} {
+	// We read the JSON config file
 	data, err := ioutil.ReadFile(ConfigName() + "." + ConfigType())
-	check(err)
 
+	// We JSON-decode the config if it exists, else we use an empty config
 	config := make(map[string]interface{})
-	err = json.Unmarshal(data, &config)
-	check(err)
-
-	return config[key]
-}
-
-func writeValueJson(key string, value interface{}) {
-	file, err := os.OpenFile(ConfigName()+"."+ConfigType(),
-		os.O_RDWR|os.O_CREATE,
-		0666)
-	check(err)
-	defer file.Close()
-
-	config := make(map[string]interface{})
-	if stat, err := file.Stat(); stat.Size() != 0 && err == nil {
-		data, err := ioutil.ReadAll(file)
-		check(err)
-
+	if err == nil && len(data) != 0 {
 		err = json.Unmarshal(data, &config)
 		check(err)
 	}
+	return config
+}
 
-	config[key] = value
-
+func writeConfigJson(config) {
+	// We JSON-encode the config
 	data, err := json.Marshal(config)
 	check(err)
 
-	file.Truncate(0)
-	_, err = file.WriteAt(data, 0)
+	// We write the JSON config file
+	ioutil.WriteFile(ConfigName() + "." + ConfigType(),
+	                 data,
+	                 0666)
 	check(err)
 }
