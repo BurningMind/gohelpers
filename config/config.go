@@ -3,7 +3,6 @@ package config
 import (
 	"encoding/json"
 	"io/ioutil"
-	"os"
 )
 
 func check(e error) {
@@ -41,11 +40,11 @@ func Value(key string) interface{} {
 }
 
 // Returns the config object depending on configType
-func Config() interface{} {
+func Config() map[string]interface{} {
 	// We handle the different config types
 	switch configType {
 	case "json":
-		readConfigJson()
+		return readConfigJson()
 
 	default:
 		panic("Unhandled config type.")
@@ -60,7 +59,7 @@ func SetValue(key string, value interface{}) {
 }
 
 // Sets the config object depending on configType
-func SetConfig(config interface{}) {
+func SetConfig(config map[string]interface{}) {
 	// We handle the different config types
 	switch configType {
 	case "json":
@@ -73,7 +72,7 @@ func SetConfig(config interface{}) {
 
 // JSON R/W functions
 
-func readConfigJson() interface{} {
+func readConfigJson() map[string]interface{} {
 	// We read the JSON config file
 	data, err := ioutil.ReadFile(ConfigName() + "." + ConfigType())
 
@@ -86,7 +85,7 @@ func readConfigJson() interface{} {
 	return config
 }
 
-func writeConfigJson(config) {
+func writeConfigJson(config map[string]interface{}) {
 	// We JSON-encode the config
 	data, err := json.Marshal(config)
 	check(err)

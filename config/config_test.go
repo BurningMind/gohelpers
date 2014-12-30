@@ -96,7 +96,7 @@ func TestWriteConfigJson(t *testing.T) {
 	}
 
 	// We write the config using writeConfigJson
-	writeConfigJson(key, value)
+	writeConfigJson(test)
 	// We don't forget to remove the file at the end
 	defer os.Remove(ConfigName() + "." + ConfigType())
 
@@ -127,11 +127,11 @@ func BenchmarkWriteConfigJson(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		// We initialize the config file for it to be non-empty
-		writeConfigJson(map[string]interface{}{ "string": "test" })
+		writeConfigJson(map[string]interface{}{ "init": "test" })
 
 		// We write the config
 		b.StartTimer()
-		writeConfigJson()
+		writeConfigJson(map[string]interface{}{ "string": "test" })
 		b.StopTimer()
 
 		// We remove the config file
